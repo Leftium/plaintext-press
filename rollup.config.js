@@ -26,7 +26,11 @@ export default {
                 css.write('public/build/bundle.css');
             },
             preprocess: [
-                autoPreprocess({})
+                autoPreprocess({
+                    coffeescript: {
+                        bare: true
+                    }
+                })
             ]
         }),
 
