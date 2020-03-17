@@ -1,0 +1,6 @@
+Locators:
+    - Locators are a superset of URLs.
+    - They are composed of two major parts:
+        - type: The protocol (http:, ftp:, urlencoded:, lzstring:, buffer:, etc).
+        - data: The "payload." The type determines how to decode this part.
+        The type is optional and defaults to urlencoded.
