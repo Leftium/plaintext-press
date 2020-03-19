@@ -99,34 +99,48 @@ onMount () ->
 </script>
 
 <template lang=pug>
-    h2 Source: {@html source}
-    div.controls
-        span.taskpaper-query.inner-addon.left-addon
-            i.fas.fa-search
-            input(placeholder='TaskPaper Query' 'bind:value={tpQuery}' autofocus)
-        span: label
-            input('type=checkbox' 'bind:checked={showParents}')
-            span Show Parents
+    header
+        h2 Source: {@html source}
+        div.controls
+            span.taskpaper-query.inner-addon.left-addon
+                i.fas.fa-search
+                input(placeholder='TaskPaper Query' 'bind:value={tpQuery}' autofocus)
+            span: label
+                input('type=checkbox' 'bind:checked={showParents}')
+                span Show Parents
 
-        +await('rendered then rendered')
-            span {@html rendered.count}
-    +await('rendered')
-        div Loading...
-        +then('rendered')
-            div.content {@html rendered.html}
-        +catch('error')
-            p {error}
+            +await('rendered then rendered')
+                span {@html rendered.count}
+    main
+        +await('rendered')
+            div Loading...
+            +then('rendered')
+                div.content {@html rendered.html}
+            +catch('error')
+                p {error}
 </template>
 
 
 <style global>
+    header {
+        padding: 8px;
+        border-bottom: 1px solid #586e75;
+        background-color: #eee8d5;
+        color: #657b83;
+    }
+    main {
+        padding: 8px;
+        background-color: #fdf6e3;
+        color: #657b83;
+    }
     .controls > span {
         margin: 0 4px;
         font-size: 14px;
     }
 
     .controls > span:last-child {
-        color: #999;
+        margin-left: 40px;
+        color: #93a1a1;
     }
 
     .taskpaper-query input:focus {
@@ -138,7 +152,7 @@ onMount () ->
     }
 
     .taskpaper-query input {
-        padding: 4px 6px;
+        padding: 2px 2px;
         font-size: 14px;
         border-radius: 15px;
     }
