@@ -72,10 +72,23 @@ renderTaskpaperResultsOrAll = (text, query, showParents) ->
 
     return { html, count }
 
+onClick = (e) ->
+    if document.selection # IE
+        range = document.body.createTextRange()
+        range.moveToElementText(main)
+        range.select()
+    else if window.getSelection
+        range = document.createRange()
+        range.selectNode(main)
+        window.getSelection().removeAllRanges()
+        window.getSelection().addRange(range)
+
+    document.execCommand('copy')
 
 open = true
 tpQuery = ''
 showParents = true
+main = null
 
 locator = parseLocator location.pathname[1..].replace(/\/+$/, '')
 {name, text} = fetchLocator locator
@@ -132,8 +145,11 @@ rendered = EMPTY_PROMISE
                 span Show Parents
 
             +await('rendered then rendered')
-                span {@html rendered.count}
-    main
+                span.result-count {@html rendered.count}
+                span.copy-button: button('on:click={onClick}')
+                    i.fas.fa-clipboard
+                    | Copy to clipboard
+    main('bind:this={main}')
         +await('rendered')
             div Loading...
             +then('rendered')
@@ -188,15 +204,33 @@ rendered = EMPTY_PROMISE
     .links button {
         width: 110px;
     }
+    .controls {
+        display: flex;
+        align-items: baseline;
+    }
 
     .controls > span {
         margin-right: 8px;
         font-size: 14px;
     }
 
-    .controls > span:last-child {
-        margin-left: 40px;
+    .controls .result-count {
+        margin-left: auto;
         color: #93a1a1;
+    }
+
+    .controls .copy-button {
+        margin-right: 0;
+    }
+
+    .controls i{
+        padding-right: 6px;
+    }
+
+    .controls button {
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-bottom: 2px;
     }
 
     header details summary,
