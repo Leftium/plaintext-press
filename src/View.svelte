@@ -1,5 +1,12 @@
 <script type='text/coffeescript'>
+import { onMount } from 'svelte'
+
 import lzString from 'lz-string'
+
+import renderTaskpaper from './cs/render-taskpaper.coffee'
+
+# Never fulfilled; used as a placeholder.
+EMPTY_PROMISE = new Promise () -> 'Empty Promise'
 
 parseLocator = (locatorString) ->
     full = data = locatorString
@@ -54,7 +61,12 @@ fetchLocator = (locator) ->
 
 locator = parseLocator location.pathname[1..].replace(/\/+$/, '')
 {name, text} = fetchLocator locator
-console.log locator
+
+rendered = EMPTY_PROMISE
+
+onMount () ->
+    rendered = renderTaskpaper text
+
 </script>
 
 <template lang=pug>
@@ -63,11 +75,41 @@ console.log locator
     h2 name {name}
     h2 text
     +await('text then text')
-        p {text}
+        pre {text}
+        +catch('error')
+        p {error}
+    +await('rendered')
+        div Loading...
+        +then('rendered')
+            h2 rendered
+            div {@html rendered.count}
+            div.content {@html rendered.html}
         +catch('error')
             p {error}
 </template>
 
-<style>
 
+<style global>
+    .content {
+        white-space: pre-wrap;
+        display: inline-block;
+        tab-size: 40px;
+    }
+
+    .content [data-type="project"] { font-weight: bold; }
+    .content [data-type="note"] { font-style: italic; }
+    .content span[tag] { color: #2aa198; font-weight: normal }
+
+    .content [data-done] { text-decoration: line-through; }
+    .content [is-context='true'] { opacity: 44%; }
+
+    .content span[link] { position: relative;}
+
+    .content ul,
+    .content li,
+    .content p {
+        list-style-type: none;
+        margin: .38em auto;
+    }
 </style>
+

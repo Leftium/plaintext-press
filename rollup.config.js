@@ -4,6 +4,8 @@ import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 
+import coffeescript from 'rollup-plugin-coffee-script';
+
 import autoPreprocess from 'svelte-preprocess'
 
 const production = !process.env.ROLLUP_WATCH;
@@ -14,8 +16,12 @@ export default {
         sourcemap: true,
         format: 'iife',
         name: 'app',
-        file: 'public/build/bundle.js'
+        file: 'public/build/bundle.js',
+        globals: {
+            'birch-outline': 'birchoutline'
+        }
     },
+    external: ['birch-outline'],
     plugins: [
         svelte({
             // enable run-time checks when not in production
@@ -33,6 +39,7 @@ export default {
                 })
             ]
         }),
+        coffeescript(),
 
         // If you have external dependencies installed from
         // npm, you'll most likely need these plugins. In
