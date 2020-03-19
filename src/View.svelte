@@ -72,7 +72,7 @@ renderTaskpaperResultsOrAll = (text, query, showParents) ->
 
 
 tpQuery = ''
-showParents = false
+showParents = true
 
 locator = parseLocator location.pathname[1..].replace(/\/+$/, '')
 {name, text} = fetchLocator locator
@@ -87,13 +87,19 @@ switch locator.type
     else
         source = neatLinkify locator.full
 
+getLinkMarkdown = (url, name) ->
+    "[#{(await name) or 'enter link description here'}](#{url})"
 
-rendered = EMPTY_PROMISE
+linkUrl = "#{location.origin}/#{locator.full}"
 
 onMount () ->
     rendered = renderTaskpaperResultsOrAll text
+    linkMarkdown = getLinkMarkdown(linkUrl, name)
 
+linkMarkdown = EMPTY_PROMISE
+`$: linkMarkdown = getLinkMarkdown(linkUrl, name);`
 
+rendered = EMPTY_PROMISE
 `$: rendered = renderTaskpaperResultsOrAll(text, tpQuery, showParents)`
 
 </script>
@@ -101,6 +107,11 @@ onMount () ->
 <template lang=pug>
     header
         h2 Source: {@html source}
+        div.links
+            input(placeholder='Link Description' 'bind:value={name}')
+            pre {linkUrl}
+            +await('linkMarkdown then linkMarkdown')
+                pre {linkMarkdown}
         div.controls
             span.taskpaper-query.inner-addon.left-addon
                 i.fas.fa-search
