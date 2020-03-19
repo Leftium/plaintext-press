@@ -70,7 +70,7 @@ renderTaskpaperResultsOrAll = (text, query, showParents) ->
     return { html, count }
 
 
-
+open = true
 tpQuery = ''
 showParents = true
 
@@ -106,12 +106,23 @@ rendered = EMPTY_PROMISE
 
 <template lang=pug>
     header
-        h2 Source: {@html source}
-        div.links
-            input(placeholder='Link Description' 'bind:value={name}')
-            pre {linkUrl}
-            +await('linkMarkdown then linkMarkdown')
-                pre {linkMarkdown}
+        div.source: h1 Source: {@html source}
+        details('bind:open')
+            summary { open ? 'Hide' : 'Show' } advanced controls
+            div.options
+                h2 Options
+                div.label Description:
+                input(placeholder='Link Description' 'bind:value={name}')
+            div.links
+                h2 Shareable Links
+                label HTML:
+                    div: a(href='{linkUrl}') {name}
+                label Text:
+                    pre {linkUrl}
+                +await('linkMarkdown then linkMarkdown')
+                    label Markdown:
+                        pre {linkMarkdown}
+
         div.controls
             span.taskpaper-query.inner-addon.left-addon
                 i.fas.fa-search
@@ -134,18 +145,48 @@ rendered = EMPTY_PROMISE
 
 <style global>
     header {
-        padding: 8px;
         border-bottom: 1px solid #586e75;
         background-color: #eee8d5;
         color: #657b83;
     }
+
+    header > div {
+        padding: 0 8px;
+    }
+
+    header h1, header h2, header h3 {
+        margin: 0;
+    }
+
+    header details {
+        margin-bottom: 4px;
+        padding: 0 8px;
+        border-bottom: 1px dotted #586e75;
+    }
+    header details {
+        padding: 0 8px 4px 8px;
+    }
+
+    .options, .links {
+        margin-bottom: 20px;
+    }
+
     main {
         padding: 8px;
         background-color: #fdf6e3;
         color: #657b83;
     }
+
+    .links pre {
+        margin: 0;
+    }
+
+    .links label {
+        margin-bottom: 10px;
+    }
+
     .controls > span {
-        margin: 0 4px;
+        margin-right: 8px;
         font-size: 14px;
     }
 
@@ -154,6 +195,7 @@ rendered = EMPTY_PROMISE
         color: #93a1a1;
     }
 
+    header details summary,
     .taskpaper-query input:focus {
         outline: none;
     }
@@ -162,9 +204,14 @@ rendered = EMPTY_PROMISE
         display: inline-block;
     }
 
+    .options input,
     .taskpaper-query input {
         padding: 2px 2px;
         font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .taskpaper-query input {
         border-radius: 15px;
     }
 
@@ -188,7 +235,7 @@ rendered = EMPTY_PROMISE
     .left-addon input  { padding-left:  30px; }
     .right-addon input { padding-right: 30px; }
 
-    label {
+    .controls label {
         display: initial;
     }
 
