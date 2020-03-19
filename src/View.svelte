@@ -118,11 +118,10 @@ rendered = EMPTY_PROMISE
                 input(placeholder='Link Description' 'bind:value={name}')
             div.links
                 h2 Shareable Links
-                ClipboardLink(label='HTML' href='{linkUrl}' text="{name || 'link'}")
                 ClipboardInput(label='Text' value='{linkUrl}')
                 +await('linkMarkdown then linkMarkdown')
                     ClipboardInput(label='Markdown' value='{linkMarkdown}')
-
+                ClipboardLink(label='HTML' href='{linkUrl}' text="{name || 'link'}")
 
         div.controls
             span.taskpaper-query.inner-addon.left-addon
