@@ -70,18 +70,10 @@ onMount () ->
 </script>
 
 <template lang=pug>
-    h1 View
-
-    h2 name {name}
-    h2 text
-    +await('text then text')
-        pre {text}
-        +catch('error')
-        p {error}
+    h2 Source: {name}
     +await('rendered')
         div Loading...
         +then('rendered')
-            h2 rendered
             div {@html rendered.count}
             div.content {@html rendered.html}
         +catch('error')
