@@ -58,10 +58,25 @@ fetchLocator = (locator) ->
     return { name, text }
 
 
+renderTaskpaperResultsOrAll = (text, query, showParents) ->
+    query = query or '*'
+    { html, count } = await renderTaskpaper text, query, showParents
 
+    # If no results default to showing all results as context.
+    if not html
+        { html } = await renderTaskpaper text, '*', showParents, true
+        count = 'No results'
+
+    return { html, count }
+
+
+
+tpQuery = ''
+showParents = false
 
 locator = parseLocator location.pathname[1..].replace(/\/+$/, '')
 {name, text} = fetchLocator locator
+
 
 switch locator.type
     when 'lzstring', 'urlencoded'
@@ -76,16 +91,28 @@ switch locator.type
 rendered = EMPTY_PROMISE
 
 onMount () ->
-    rendered = renderTaskpaper text
+    rendered = renderTaskpaperResultsOrAll text
+
+
+`$: rendered = renderTaskpaperResultsOrAll(text, tpQuery, showParents)`
 
 </script>
 
 <template lang=pug>
     h2 Source: {@html source}
+    div.controls
+        span.taskpaper-query.inner-addon.left-addon
+            i.fas.fa-search
+            input(placeholder='TaskPaper Query' 'bind:value={tpQuery}' autofocus)
+        span: label
+            input('type=checkbox' 'bind:checked={showParents}')
+            span Show Parents
+
+        +await('rendered then rendered')
+            span {@html rendered.count}
     +await('rendered')
         div Loading...
         +then('rendered')
-            div {@html rendered.count}
             div.content {@html rendered.html}
         +catch('error')
             p {error}
@@ -93,6 +120,57 @@ onMount () ->
 
 
 <style global>
+    .controls > span {
+        margin: 0 4px;
+        font-size: 14px;
+    }
+
+    .controls > span:last-child {
+        color: #999;
+    }
+
+    .taskpaper-query input:focus {
+        outline: none;
+    }
+
+    .taskpaper-query {
+        display: inline-block;
+    }
+
+    .taskpaper-query input {
+        padding: 4px 6px;
+        font-size: 14px;
+        border-radius: 15px;
+    }
+
+    .inner-addon {
+        position: relative;
+    }
+
+    /* style icon */
+    .inner-addon .fas {
+        position: absolute;
+        padding: 7px;
+        pointer-events: none;
+        color: #ccc;
+    }
+
+    /* align icon */
+    .left-addon .fas  { left:  2px; }
+    .right-addon .fas { right: 0px; }
+
+    /* add padding  */
+    .left-addon input  { padding-left:  30px; }
+    .right-addon input { padding-right: 30px; }
+
+    label {
+        display: initial;
+    }
+
+    input[type=checkbox] {
+        margin: 3px 3px 3px 4px;
+    }
+
     .content {
         white-space: pre-wrap;
         display: inline-block;
