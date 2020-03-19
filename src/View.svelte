@@ -3,6 +3,9 @@ import { onMount } from 'svelte'
 
 import lzString from 'lz-string'
 
+import ClipboardInput from './components/ClipboardInput.svelte'
+import ClipboardLink  from './components/ClipboardLink.svelte'
+
 import renderTaskpaper from './cs/render-taskpaper.coffee'
 import neatLinkify from './cs/neat-linkify.coffee'
 
@@ -115,13 +118,11 @@ rendered = EMPTY_PROMISE
                 input(placeholder='Link Description' 'bind:value={name}')
             div.links
                 h2 Shareable Links
-                label HTML:
-                    div: a(href='{linkUrl}') {name}
-                label Text:
-                    pre {linkUrl}
+                ClipboardLink(label='HTML' href='{linkUrl}' text="{name || 'link'}")
+                ClipboardInput(label='Text' value='{linkUrl}')
                 +await('linkMarkdown then linkMarkdown')
-                    label Markdown:
-                        pre {linkMarkdown}
+                    ClipboardInput(label='Markdown' value='{linkMarkdown}')
+
 
         div.controls
             span.taskpaper-query.inner-addon.left-addon
@@ -183,6 +184,10 @@ rendered = EMPTY_PROMISE
 
     .links label {
         margin-bottom: 10px;
+    }
+
+    .links button {
+        width: 110px;
     }
 
     .controls > span {
