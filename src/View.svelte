@@ -4,6 +4,7 @@ import { onMount } from 'svelte'
 import lzString from 'lz-string'
 
 import renderTaskpaper from './cs/render-taskpaper.coffee'
+import neatLinkify from './cs/neat-linkify.coffee'
 
 # Never fulfilled; used as a placeholder.
 EMPTY_PROMISE = new Promise () -> 'Empty Promise'
@@ -62,6 +63,16 @@ fetchLocator = (locator) ->
 locator = parseLocator location.pathname[1..].replace(/\/+$/, '')
 {name, text} = fetchLocator locator
 
+switch locator.type
+    when 'lzstring', 'urlencoded'
+        source = 'embedded in URL'
+        if name then source = "#{name} (#{source})"
+    when 'local'
+        source = "#{name} (local browser)"
+    else
+        source = neatLinkify locator.full
+
+
 rendered = EMPTY_PROMISE
 
 onMount () ->
@@ -70,7 +81,7 @@ onMount () ->
 </script>
 
 <template lang=pug>
-    h2 Source: {name}
+    h2 Source: {@html source}
     +await('rendered')
         div Loading...
         +then('rendered')
