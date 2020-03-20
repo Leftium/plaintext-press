@@ -3,6 +3,7 @@ import { onMount } from 'svelte'
 
 import lzString from 'lz-string'
 
+import StickyHeader   from './components/StickyHeader.svelte'
 import ClipboardInput from './components/ClipboardInput.svelte'
 import ClipboardLink  from './components/ClipboardLink.svelte'
 
@@ -10,7 +11,6 @@ import renderTaskpaper from './cs/render-taskpaper.coffee'
 import neatLinkify from './cs/neat-linkify.coffee'
 
 # Never fulfilled; used as a placeholder.
-EMPTY_PROMISE = new Promise () -> 'Empty Promise'
 
 parseLocator = (locatorString) ->
     full = data = locatorString
@@ -112,31 +112,32 @@ onMount () ->
     rendered = renderTaskpaperResultsOrAll text
     linkMarkdown = getLinkMarkdown(linkUrl, name)
 
-linkMarkdown = EMPTY_PROMISE
+linkMarkdown = null
 `$: linkMarkdown = getLinkMarkdown(linkUrl, name);`
 
-rendered = EMPTY_PROMISE
+rendered = null
 `$: rendered = renderTaskpaperResultsOrAll(text, tpQuery, showParents)`
 
 </script>
 
 <template lang=pug>
-    header
-        div.source: h1 Source: {@html source}
-        details('bind:open')
-            summary { open ? 'Hide' : 'Show' } advanced controls
-            div.options
-                h2 Options
-                div.label Description:
-                input(placeholder='Link Description' 'bind:value={name}')
-            div.links
-                h2 Shareable Links
-                ClipboardInput(label='Text' value='{linkUrl}')
-                +await('linkMarkdown then linkMarkdown')
-                    ClipboardInput(label='Markdown' value='{linkMarkdown}')
-                ClipboardLink(label='HTML' href='{linkUrl}' text="{name || 'link'}")
+    StickyHeader
+        header(slot='beforeElement')
+            div.source: h1 Source: {@html source}
+            details('bind:open')
+                summary { open ? 'Hide' : 'Show' } advanced controls
+                div.options
+                    h2 Options
+                    div.label Description:
+                    input(placeholder='Link Description' 'bind:value={name}')
+                div.links
+                    h2 Shareable Links
+                    ClipboardInput(label='Text' value='{linkUrl}')
+                    +await('linkMarkdown then linkMarkdown')
+                        ClipboardInput(label='Markdown' value='{linkMarkdown}')
+                    ClipboardLink(label='HTML' href='{linkUrl}' text="{name || 'link'}")
 
-        div.controls
+        div.controls(slot='stickyElement')
             span.taskpaper-query.inner-addon.left-addon
                 i.fas.fa-search
                 input(placeholder='TaskPaper Query' 'bind:value={tpQuery}' autofocus)
@@ -161,7 +162,6 @@ rendered = EMPTY_PROMISE
 
 <style global>
     header {
-        border-bottom: 1px solid #586e75;
         background-color: #eee8d5;
         color: #657b83;
     }
@@ -175,15 +175,10 @@ rendered = EMPTY_PROMISE
     }
 
     header details {
-        margin-bottom: 4px;
         padding: 0 8px;
-        border-bottom: 1px dotted #586e75;
-    }
-    header details {
-        padding: 0 8px 4px 8px;
     }
 
-    .options, .links {
+    .options {
         margin-bottom: 20px;
     }
 
@@ -207,6 +202,9 @@ rendered = EMPTY_PROMISE
     .controls {
         display: flex;
         align-items: baseline;
+        border-bottom: 1px dotted #586e75;
+        background-color: #eee8d5;
+        padding: 2px 8px;
     }
 
     .controls > span {
