@@ -140,6 +140,7 @@ rendered = null
         div.controls(slot='stickyElement' 'spellcheck=false')
             span.taskpaper-query.inner-addon.left-addon
                 i.fas.fa-search
+                <!-- svelte-ignore a11y-autofocus -->
                 input(placeholder='TaskPaper Query' 'bind:value={tpQuery}' autofocus)
             span: label
                 input('type=checkbox' 'bind:checked={showParents}')
