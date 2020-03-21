@@ -122,7 +122,7 @@ rendered = null
 
 <template lang=pug>
     StickyHeader
-        header(slot='beforeElement')
+        header(slot='beforeElement' 'spellcheck=false')
             div.source: h1 Source: {@html source}
             details('bind:open')
                 summary { open ? 'Hide' : 'Show' } advanced controls
@@ -137,7 +137,7 @@ rendered = null
                         ClipboardInput(label='Markdown' value='{linkMarkdown}')
                     ClipboardLink(label='HTML' href='{linkUrl}' text="{name || 'link'}")
 
-        div.controls(slot='stickyElement')
+        div.controls(slot='stickyElement' 'spellcheck=false')
             span.taskpaper-query.inner-addon.left-addon
                 i.fas.fa-search
                 input(placeholder='TaskPaper Query' 'bind:value={tpQuery}' autofocus)
