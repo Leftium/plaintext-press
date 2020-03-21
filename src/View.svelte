@@ -85,9 +85,12 @@ onClick = (e) ->
 
     document.execCommand('copy')
 
-open = true
-tpQuery = ''
-showParents = true
+
+url = new URL location
+
+open = url.searchParams.get('advanced') is '1'
+tpQuery = url.searchParams.get('query')
+showParents = !(url.searchParams.get('hide-parents') is '1')
 main = null
 
 locator = parseLocator location.pathname[1..].replace(/\/+$/, '')
@@ -106,11 +109,25 @@ switch locator.type
 getLinkMarkdown = (url, name) ->
     "[#{(await name) or 'enter link description here'}](#{url})"
 
-linkUrl = "#{location.origin}/#{locator.full}"
+getParamString = (query, showParents) ->
+    params = {}
+    if tpQuery then params.query = tpQuery
+    if !showParents then params['hide-parents'] = '1'
+
+    result = (new URLSearchParams params).toString()
+    if result then result = "?#{result}"
+    return result
+
+getLinkUrl = (locator, tpQuery, showParents) ->
+    paramString = getParamString(tpQuery, showParents) || ''
+    "#{location.origin}/#{locator.full}#{paramString}"
+
+`$: linkUrl = getLinkUrl(locator, tpQuery, showParents)`
 
 onMount () ->
     rendered = renderTaskpaperResultsOrAll text
     linkMarkdown = getLinkMarkdown(linkUrl, name)
+
 
 linkMarkdown = null
 `$: linkMarkdown = getLinkMarkdown(linkUrl, name);`
