@@ -72,6 +72,37 @@ renderTaskpaperResultsOrAll = (text, query, showParents) ->
 
     return { html, count }
 
+render = (text, query, showParents) ->
+    {html, count} = await renderTaskpaperResultsOrAll(text, query, showParents)
+
+    if not html then return {html, count}
+
+    tmpDiv = document.createElement 'div'
+    tmpDiv.innerHTML = html
+
+    listItems = tmpDiv.querySelectorAll 'li'
+
+    for listItem in listItems
+        if matches = listItem.innerText.match /(^|\s)#([^#\s]*)/i
+            listItem.id = matches[2].toLowerCase()
+
+    html = tmpDiv.innerHTML
+
+    return {html, count}
+
+
+jumpToHash = () ->
+    if target = document.querySelector(location.hash)
+        y = target.offsetTop - 44
+
+        window.scrollTo options =
+            behavior: 'smooth'
+            top: y
+
+
+onHashChange = (e) ->
+    jumpToHash()
+
 onClick = (e) ->
     if document.selection # IE
         range = document.body.createTextRange()
@@ -136,17 +167,21 @@ getLinkUrl = (locator, tpQuery, showParents) ->
 `$: linkUrl = getLinkUrl(locator, tpQuery, showParents)`
 
 onMount () ->
-    rendered = renderTaskpaperResultsOrAll text
-    linkMarkdown = getLinkMarkdown(linkUrl, name)
+    await rendered
+    jumpToHash()
 
 
 linkMarkdown = null
 `$: linkMarkdown = getLinkMarkdown(linkUrl, name);`
 
 rendered = null
-`$: rendered = renderTaskpaperResultsOrAll(text, tpQuery, showParents)`
+`$: rendered = render(text, tpQuery, showParents)`
 
 </script>
+
+<svelte:window
+    on:hashchange={jumpToHash}
+/>
 
 <template lang=pug>
     StickyHeader
