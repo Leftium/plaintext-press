@@ -85,6 +85,13 @@ onClick = (e) ->
 
     document.execCommand('copy')
 
+onToggle = (e) ->
+    if e.target.open
+        descriptionInput.select()
+    else
+        queryInput.select()
+
+
 
 url = new URL location
 
@@ -92,6 +99,10 @@ open = url.searchParams.get('advanced') is '1'
 tpQuery = url.searchParams.get('query')
 showParents = !(url.searchParams.get('hide-parents') is '1')
 main = null
+
+descriptionInput = null
+queryInput = null
+
 
 locator = parseLocator location.pathname[1..].replace(/\/+$/, '')
 {name, text} = fetchLocator locator
@@ -141,12 +152,12 @@ rendered = null
     StickyHeader
         header(slot='beforeElement' 'spellcheck=false')
             div.source: h1 Source: {@html source}
-            details('bind:open')
+            details('bind:open' 'on:toggle={onToggle}')
                 summary { open ? 'Hide' : 'Show' } advanced controls
                 div.options
                     h2 Options
                     div.label Description:
-                    input(placeholder='Link Description' 'bind:value={name}')
+                    input('bind:this={descriptionInput}' 'bind:value={name}' placeholder='Link Description')
                 div.links
                     h2 Shareable Links
                     ClipboardInput(label='Text' value='{linkUrl}')
@@ -157,8 +168,7 @@ rendered = null
         div.controls(slot='stickyElement' 'spellcheck=false')
             span.taskpaper-query.inner-addon.left-addon
                 i.fas.fa-search
-                <!-- svelte-ignore a11y-autofocus -->
-                input(placeholder='TaskPaper Query' 'bind:value={tpQuery}' autofocus)
+                input('bind:this={queryInput}' 'bind:value={tpQuery}' placeholder='TaskPaper Query')
             span: label
                 input('type=checkbox' 'bind:checked={showParents}')
                 span Show Parents
