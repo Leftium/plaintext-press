@@ -3,7 +3,6 @@ import { onMount } from 'svelte'
 
 import lzString from 'lz-string'
 
-import StickyHeader   from './components/StickyHeader.svelte'
 import ClipboardInput from './components/ClipboardInput.svelte'
 import ClipboardLink  from './components/ClipboardLink.svelte'
 
@@ -184,23 +183,23 @@ rendered = null
 />
 
 <template lang=pug>
-    StickyHeader
-        header(slot='beforeElement' 'spellcheck=false')
-            div.source: h1 Source: {@html source}
-            details('bind:open' 'on:toggle={onToggle}')
-                summary { open ? 'Hide' : 'Show' } advanced controls
-                div.options
-                    h2 Options
-                    div.label Description:
-                    input('bind:this={descriptionInput}' 'bind:value={name}' placeholder='Link Description')
-                div.links
-                    h2 Shareable Links
-                    ClipboardInput(label='Text' value='{linkUrl}')
-                    +await('linkMarkdown then linkMarkdown')
-                        ClipboardInput(label='Markdown' value='{linkMarkdown}')
-                    ClipboardLink(label='HTML' href='{linkUrl}' text="{name || 'link'}")
+    header('spellcheck=false')
+        div.source: h1 Source: {@html source}
+        details('bind:open' 'on:toggle={onToggle}')
+            summary { open ? 'Hide' : 'Show' } advanced controls
+            div.options
+                h2 Options
+                div.label Description:
+                input('bind:this={descriptionInput}' 'bind:value={name}' placeholder='Link Description')
+            div.links
+                h2 Shareable Links
+                ClipboardInput(label='Text' value='{linkUrl}')
+                +await('linkMarkdown then linkMarkdown')
+                    ClipboardInput(label='Markdown' value='{linkMarkdown}')
+                ClipboardLink(label='HTML' href='{linkUrl}' text="{name || 'link'}")
 
-        div.controls(slot='stickyElement' 'spellcheck=false')
+    div.controls-container
+        div.controls('spellcheck=false')
             span.taskpaper-query.inner-addon.left-addon
                 i.fas.fa-search
                 input('bind:this={queryInput}' 'bind:value={tpQuery}' placeholder='TaskPaper Query')
@@ -213,13 +212,13 @@ rendered = null
                 span.copy-button: button('on:click={onClick}')
                     i.fas.fa-clipboard
                     | Copy to clipboard
-    main('bind:this={main}')
-        +await('rendered')
-            div Loading...
-            +then('rendered')
-                div.content {@html rendered.html}
-            +catch('error')
-                p {error}
+        main('bind:this={main}')
+            +await('rendered')
+                div Loading...
+                +then('rendered')
+                    div.content {@html rendered.html}
+                +catch('error')
+                    p {error}
 </template>
 
 
@@ -265,9 +264,13 @@ rendered = null
     .controls {
         display: flex;
         align-items: baseline;
+
         border-bottom: 1px dotted #586e75;
         background-color: #eee8d5;
         padding: 2px 8px;
+
+        position: sticky;
+        top: 0;
     }
 
     .controls > span {
@@ -354,8 +357,6 @@ rendered = null
 
     .content [data-done] { text-decoration: line-through; }
     .content [is-context='true'] { opacity: 44%; }
-
-    .content span[link] { position: relative;}
 
     .content ul,
     .content li,
