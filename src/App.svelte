@@ -1,6 +1,6 @@
 <script type='text/coffeescript'>
-    import Main from './main.svelte'
-    import View from './view.svelte'
+    import Main from './Main.svelte'
+    import View from './View.svelte'
 
     TEST_URLS = [
         ['View: urlencoded', '/Hello+World']
