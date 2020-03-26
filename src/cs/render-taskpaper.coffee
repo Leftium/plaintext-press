@@ -1,7 +1,7 @@
 import * as birch from 'birch-outline'
 import neatLinkify from './neat-linkify.coffee'
 
-export default renderTaskpaperOutline  = (text, itemPath='*', showParents=true, allContext) ->
+export default renderTaskpaperOutline  = (text, itemPath='*', selectedTags=[], showParents=true, allContext) ->
     renderItem = (item) ->
         itemLI = document.createElement('li')
         for attribute in item.attributeNames
@@ -54,7 +54,17 @@ export default renderTaskpaperOutline  = (text, itemPath='*', showParents=true, 
     results = outline.evaluateItemPath(itemPath)
 
     for item in results
-        item.directResult = true
+        item.hasTag = false
+        for tagName in item.attributeNames
+            if tagName in ['data-type', 'indent'] then continue
+            tagName = tagName.replace 'data-', ''
+            key = tagName.toLowerCase()
+            if (key in selectedTags) or (selectedTags.length is 0)
+                item.directResult = true
+                item.hasTag = true
+                break
+
+    results = results.filter (item) -> item.hasTag
 
     resultsToRender = results
 
@@ -82,7 +92,7 @@ export default renderTaskpaperOutline  = (text, itemPath='*', showParents=true, 
 
     resultCount = "#{results.length} result"
     if results.length isnt 1 then resultCount += 's'
-    if itemPath is '*' then resultCount = ''
+    if (itemPath is '*') and (selectedTags.length is 0) then resultCount = ''
 
     return { html, count: resultCount, tags: sortedTags }
 

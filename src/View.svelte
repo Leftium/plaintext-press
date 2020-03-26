@@ -60,19 +60,19 @@ fetchLocator = (locator) ->
     return { name, text }
 
 
-renderTaskpaperResultsOrAll = (text, query, showParents) ->
+renderTaskpaperResultsOrAll = (text, query, selectedTags, showParents) ->
     query = query or '*'
-    { html, count, rest... } = await renderTaskpaper text, query, showParents
+    { html, count, rest... } = await renderTaskpaper text, query, selectedTags, showParents
 
     # If no results default to showing all results as context.
     if not html
-        { html } = await renderTaskpaper text, '*', showParents, true
+        { html } = await renderTaskpaper text, '*', [], showParents, true
         count = 'No results'
 
     return { html, count, rest... }
 
-render = (text, query, showParents) ->
-    {html, rest...} = await renderTaskpaperResultsOrAll(text, query, showParents)
+render = (text, query, selectedTags, showParents) ->
+    {html, rest...} = await renderTaskpaperResultsOrAll(text, query, selectedTags, showParents)
 
     if html
         tmpDiv = document.createElement 'div'
@@ -174,7 +174,7 @@ linkMarkdown = null
 `$: linkMarkdown = getLinkMarkdown(linkUrl, name);`
 
 rendered = null
-`$: rendered = render(text, tpQuery, showParents)`
+`$: rendered = render(text, tpQuery, selectedTags, showParents)`
 
 </script>
 
@@ -217,7 +217,7 @@ rendered = null
                 div.sidebar
                     +await('rendered then rendered')
                         +each('rendered.tags as { key, name, count }')
-                            div
+                            div.tags
                                 input('type=checkbox' id='tag-{name}' 'bind:group={selectedTags}' value='{key}')
                                 label(for='tag-{name}') {name} {count}
             main('bind:this={main}')
@@ -231,7 +231,7 @@ rendered = null
 
 
 <style global>
-    input[type=checkbox] {
+    .tags input[type=checkbox] {
         display: none
     }
 
