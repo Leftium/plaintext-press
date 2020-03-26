@@ -36,14 +36,20 @@ export default renderTaskpaperOutline  = (text, itemPath='*', showParents=true, 
         for tagName in item.attributeNames
             if tagName in ['data-type', 'indent'] then continue
             tagName = tagName.replace 'data-', ''
-            tagNameNormalized = tagName.toLowerCase()
+            key = tagName.toLowerCase()
 
-            if tags[tagNameNormalized]
-                tags[tagNameNormalized].count++
+            if tags[key]
+                tags[key].count++
             else
-                tags[tagNameNormalized] =
+                tags[key] =
+                    key: key
                     name: tagName or '@'
                     count : 1
+
+    # Sort by count, then alphabetically.
+    sortedKeys = Object.keys(tags).sort().sort (a, b) ->
+        tags[b].count - tags[a].count
+    sortedTags = (tags[k] for k in sortedKeys)
 
     results = outline.evaluateItemPath(itemPath)
 
@@ -78,5 +84,5 @@ export default renderTaskpaperOutline  = (text, itemPath='*', showParents=true, 
     if results.length isnt 1 then resultCount += 's'
     if itemPath is '*' then resultCount = ''
 
-    return { html, count: resultCount, tags }
+    return { html, count: resultCount, tags: sortedTags }
 

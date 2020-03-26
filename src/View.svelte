@@ -132,6 +132,7 @@ main = null
 descriptionInput = null
 queryInput = null
 
+selectedTags = []
 
 locator = parseLocator location.pathname[1..].replace(/\/+$/, '')
 {name, text} = fetchLocator locator
@@ -211,17 +212,46 @@ rendered = null
                 span.copy-button: button('on:click={onClick}')
                     i.fas.fa-clipboard
                     | Copy to clipboard
-        main('bind:this={main}')
-            +await('rendered')
-                div Loading...
-                +then('rendered')
-                    div.content {@html rendered.html}
-                +catch('error')
+        div.sidebar-main-container
+            div.sidebar-container
+                div.sidebar
+                    +await('rendered then rendered')
+                        +each('rendered.tags as { key, name, count }')
+                            div
+                                input('type=checkbox' id='tag-{name}' 'bind:group={selectedTags}' value='{key}')
+                                label(for='tag-{name}') {name} {count}
+            main('bind:this={main}')
+                +await('rendered')
+                    div Loading...
+                    +then('rendered')
+                        div.content {@html rendered.html}
+                    +catch('error')
                     p {error}
 </template>
 
 
 <style global>
+    input[type=checkbox] {
+        display: none
+    }
+
+    input:checked + label {
+        font-weight: bold;
+    }
+
+    .sidebar-main-container {
+        display: flex;
+    }
+
+    .sidebar {
+        width: 200px;
+        height: 400px;
+        position: sticky;
+        top: 34px;
+
+        overflow-y: scroll;
+    }
+
     header {
         background-color: #eee8d5;
         color: #657b83;
@@ -270,6 +300,8 @@ rendered = null
 
         position: sticky;
         top: 0;
+
+        z-index: 9999;
     }
 
     .controls > span {
