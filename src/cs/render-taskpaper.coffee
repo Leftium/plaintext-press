@@ -43,7 +43,7 @@ export default renderTaskpaperOutline  = (text, itemPath='*', selectedTags=[], s
             else
                 tags[key] =
                     key: key
-                    name: tagName or '@'
+                    name: "@#{tagName}"
                     count : 1
 
     # Sort by count, then alphabetically.
