@@ -29,6 +29,22 @@ export default renderTaskpaperOutline  = (text, itemPath='*', showParents=true, 
         return neatLinkify itemLI.outerHTML
 
     outline = new birchoutline.Outline.createTaskPaperOutline(await text)
+
+    # Count tags
+    tags = {}
+    for item in outline.items
+        for tagName in item.attributeNames
+            if tagName in ['data-type', 'indent'] then continue
+            tagName = tagName.replace 'data-', ''
+            tagNameNormalized = tagName.toLowerCase()
+
+            if tags[tagNameNormalized]
+                tags[tagNameNormalized].count++
+            else
+                tags[tagNameNormalized] =
+                    name: tagName or '@'
+                    count : 1
+
     results = outline.evaluateItemPath(itemPath)
 
     for item in results
@@ -62,5 +78,5 @@ export default renderTaskpaperOutline  = (text, itemPath='*', showParents=true, 
     if results.length isnt 1 then resultCount += 's'
     if itemPath is '*' then resultCount = ''
 
-    return { html, count: resultCount }
+    return { html, count: resultCount, tags }
 

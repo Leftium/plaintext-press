@@ -62,32 +62,31 @@ fetchLocator = (locator) ->
 
 renderTaskpaperResultsOrAll = (text, query, showParents) ->
     query = query or '*'
-    { html, count } = await renderTaskpaper text, query, showParents
+    { html, count, rest... } = await renderTaskpaper text, query, showParents
 
     # If no results default to showing all results as context.
     if not html
         { html } = await renderTaskpaper text, '*', showParents, true
         count = 'No results'
 
-    return { html, count }
+    return { html, count, rest... }
 
 render = (text, query, showParents) ->
-    {html, count} = await renderTaskpaperResultsOrAll(text, query, showParents)
+    {html, rest...} = await renderTaskpaperResultsOrAll(text, query, showParents)
 
-    if not html then return {html, count}
+    if html
+        tmpDiv = document.createElement 'div'
+        tmpDiv.innerHTML = html
 
-    tmpDiv = document.createElement 'div'
-    tmpDiv.innerHTML = html
+        listItems = tmpDiv.querySelectorAll 'li'
 
-    listItems = tmpDiv.querySelectorAll 'li'
+        for listItem in listItems
+            if matches = listItem.innerText.match /(^|\s)#([^#\s]*)/i
+                listItem.id = matches[2].toLowerCase()
 
-    for listItem in listItems
-        if matches = listItem.innerText.match /(^|\s)#([^#\s]*)/i
-            listItem.id = matches[2].toLowerCase()
+        html = tmpDiv.innerHTML
 
-    html = tmpDiv.innerHTML
-
-    return {html, count}
+    return {html, rest...}
 
 
 jumpToHash = () ->
