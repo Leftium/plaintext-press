@@ -9,8 +9,6 @@ import ClipboardLink  from './components/ClipboardLink.svelte'
 import renderTaskpaper from './cs/render-taskpaper.coffee'
 import neatLinkify from './cs/neat-linkify.coffee'
 
-# Never fulfilled; used as a placeholder.
-
 parseLocator = (locatorString) ->
     full = data = locatorString
     type = 'urlencoded'
@@ -59,20 +57,8 @@ fetchLocator = (locator) ->
 
     return { name, text }
 
-
-renderTaskpaperResultsOrAll = (text, query, selectedTags, showParents) ->
-    query = query or '*'
-    { html, count, rest... } = await renderTaskpaper text, query, selectedTags, showParents
-
-    # If no results default to showing all results as context.
-    if not html
-        { html } = await renderTaskpaper text, '*', [], showParents, true
-        count = 'No results'
-
-    return { html, count, rest... }
-
-render = (text, query, selectedTags, showParents) ->
-    {html, rest...} = await renderTaskpaperResultsOrAll(text, query, selectedTags, showParents)
+render = (text, query, selectedTags, contextLevel) ->
+    {html, rest...} = await renderTaskpaper text, query, selectedTags, contextLevel
 
     if html
         tmpDiv = document.createElement 'div'
@@ -88,9 +74,14 @@ render = (text, query, selectedTags, showParents) ->
 
     return {html, rest...}
 
+tagIsVisible = (key, name, tagFilter) ->
+    if (tagFilter is '') or (name.toLowerCase().match(tagFilter)) or (key in selectedTags)
+        return true
+
+
 
 jumpToHash = () ->
-    if target = document.querySelector(location.hash)
+    if location.hash and target = document.querySelector(location.hash)
         y = target.offsetTop - 44
 
         window.scrollTo options =
@@ -121,21 +112,61 @@ onToggle = (e) ->
         queryInput.select()
 
 
-
 url = new URL location
 
 open = url.searchParams.get('advanced') is '1'
 tpQuery = url.searchParams.get('query')
-showParents = !(url.searchParams.get('hide-parents') is '1')
+
+tagFilter = ''
+
 main = null
+
+contextLevel = url.searchParams.get('context-level') or 0
+contextLevelDescription = (level) ->
+    text = switch
+        when level < 0
+            'Hide Parents'
+        when level is 0
+            'Show All'
+        else
+            "#{level} deep"
+    "Context: #{text}"
+
 
 descriptionInput = null
 queryInput = null
 
 selectedTags = []
 
+
+getLinkMarkdown = (url, name) ->
+    "[#{(await name) or 'enter link description here'}](#{url})"
+
+getParamString = (query, contextLevel) ->
+    params = {}
+    if tpQuery then params.query = tpQuery
+    if contextLevel then params['context-level'] = contextLevel
+
+    result = (new URLSearchParams params).toString()
+    if result then result = "?#{result}"
+    return result
+
+getLinkUrl = (locator, tpQuery, contextLevel) ->
+    paramString = getParamString(tpQuery, contextLevel) || ''
+    "#{location.origin}/#{locator.full}#{paramString}"
+
+`$: linkUrl = getLinkUrl(locator, tpQuery, contextLevel)`
+
+
 locator = parseLocator location.pathname[1..].replace(/\/+$/, '')
 {name, text} = fetchLocator locator
+
+linkMarkdown = null
+`$: linkMarkdown = getLinkMarkdown(linkUrl, name);`
+
+rendered = null
+`$: rendered = render(text, tpQuery, selectedTags, contextLevel)`
+
 
 
 switch locator.type
@@ -147,34 +178,27 @@ switch locator.type
     else
         source = neatLinkify locator.full
 
-getLinkMarkdown = (url, name) ->
-    "[#{(await name) or 'enter link description here'}](#{url})"
 
-getParamString = (query, showParents) ->
-    params = {}
-    if tpQuery then params.query = tpQuery
-    if !showParents then params['hide-parents'] = '1'
+onTag = (e) ->
+    delayedFunction = () ->
+        if e.target.checked
+            contextLevel = 1
+        else
+            if selectedTags.length is 0
+                contextLevel = 0
+    setTimeout delayedFunction, 0
 
-    result = (new URLSearchParams params).toString()
-    if result then result = "?#{result}"
-    return result
 
-getLinkUrl = (locator, tpQuery, showParents) ->
-    paramString = getParamString(tpQuery, showParents) || ''
-    "#{location.origin}/#{locator.full}#{paramString}"
+onClickClearAll = (e) ->
+    selectedTags = []
+    contextLevel = 0
 
-`$: linkUrl = getLinkUrl(locator, tpQuery, showParents)`
 
 onMount () ->
     await rendered
     jumpToHash()
 
 
-linkMarkdown = null
-`$: linkMarkdown = getLinkMarkdown(linkUrl, name);`
-
-rendered = null
-`$: rendered = render(text, tpQuery, selectedTags, showParents)`
 
 </script>
 
@@ -203,9 +227,11 @@ rendered = null
             span.taskpaper-query.inner-addon.left-addon
                 i.fas.fa-search
                 input('bind:this={queryInput}' 'bind:value={tpQuery}' placeholder='TaskPaper Query')
-            span: label
-                input('type=checkbox' 'bind:checked={showParents}')
-                span Show Parents
+            div
+                span.context-buttons
+                    button('on:click={() => contextLevel = Math.max(contextLevel-1, -1)}') &lt;
+                    button('on:click={() => contextLevel++}') &gt;
+                span {contextLevelDescription(contextLevel)}
 
             +await('rendered then rendered')
                 span.result-count {@html rendered.count}
@@ -213,13 +239,21 @@ rendered = null
                     i.fas.fa-clipboard
                     | Copy to clipboard
         div.sidebar-main-container
-            div.sidebar-container
+            div.sidebar-container('spellcheck=false')
                 div.sidebar
-                    +await('rendered then rendered')
-                        +each('rendered.tags as { key, name, count }')
-                            div.tags
-                                input('type=checkbox' id='tag-{name}' 'bind:group={selectedTags}' value='{key}')
-                                label(for='tag-{name}') {name} {count}
+                    div.tag-controls
+                        h2 Tags
+                        input('bind:value={tagFilter}' placeholder='Tag Filter')
+                        button('on:click={onClickClearAll}') Clear All Tags
+                    div.tag-container
+                        +await('rendered then rendered')
+                            +each('rendered.tags as { key, name, count }')
+                                +if('tagIsVisible(key, name, tagFilter)')
+                                    div.tag
+                                        input('on:change={onTag}' 'type=checkbox' id='tag-{name}' 'bind:group={selectedTags}' value='{key}')
+                                        label(for='tag-{name}'): span.label
+                                            span.tag-name {name}
+                                            span.tag-count {count}
             main('bind:this={main}')
                 +await('rendered')
                     div Loading...
@@ -231,7 +265,29 @@ rendered = null
 
 
 <style global>
-    .tags input[type=checkbox] {
+    .tag-controls {
+        padding: 8px;
+    }
+
+    .label {
+        display: flex;
+        justify-content: space-between;
+        padding: 0 8px;
+    }
+    .tag-count {
+        font-size: 12px;
+        opacity: 50%;
+    }
+
+    .tag-container {
+        height: 300px;
+        overflow-y: scroll;
+    }
+
+    .controls span {
+        font-size: 14px;
+    }
+    .tag input[type=checkbox] {
         display: none
     }
 
@@ -241,6 +297,7 @@ rendered = null
 
     .sidebar-main-container {
         display: flex;
+        background-color: #eee8d5
     }
 
     .sidebar {
@@ -248,8 +305,6 @@ rendered = null
         height: 400px;
         position: sticky;
         top: 34px;
-
-        overflow-y: scroll;
     }
 
     header {
@@ -274,6 +329,8 @@ rendered = null
     }
 
     main {
+        width: 100%;
+        min-height: 100vh;
         padding: 8px;
         background-color: #fdf6e3;
         color: #657b83;
@@ -322,6 +379,7 @@ rendered = null
         padding-right: 6px;
     }
 
+    .sidebar button,
     .controls button {
         padding: 2px 8px;
         border-radius: 4px;
@@ -376,6 +434,28 @@ rendered = null
         margin: 3px 3px 3px 4px;
     }
 
+
+    .context-buttons button {
+        padding: 2px;
+    }
+
+    .controls button:focus {
+        border-color: #ccc;
+    }
+
+    .context-buttons :first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right: .5px solid #ccc;
+    }
+
+    .context-buttons :last-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-left: .5px solid #ccc;
+    }
+
+
     .content {
         white-space: pre-wrap;
         display: inline-block;
@@ -388,6 +468,10 @@ rendered = null
 
     .content [data-done] { text-decoration: line-through; }
     .content [is-context='true'] { opacity: 44%; }
+
+    .content [show='result'] { }
+    .content [show='context'] { opacity: 22%; }
+    .content [show='hidden'] { display:none }
 
     .content ul,
     .content li,

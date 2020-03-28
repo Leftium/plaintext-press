@@ -1,28 +1,42 @@
 import * as birch from 'birch-outline'
 import neatLinkify from './neat-linkify.coffee'
 
-export default renderTaskpaperOutline  = (text, itemPath='*', selectedTags=[], showParents=true, allContext) ->
+export default renderTaskpaperOutline  = (text, itemPath, selectedTags=[], contextLevel=0) ->
+    query = itemPath
+    if not query
+        if selectedTags.length
+	    # All items.
+            query = '*'
+        else
+            # All top level items.
+            query = '/*'
+
     renderItem = (item) ->
         itemLI = document.createElement('li')
         for attribute in item.attributeNames
              itemLI.setAttribute attribute, item.getAttribute(attribute)
 
         indentation = ''
-        if showParents
+        if contextLevel >= 0
             for n in [0...item.depth-1]
                 indentation += '\t'
 
         itemLI.setAttribute 'depth', item.depth
 
-
-        if item.directResult
-            itemLI.setAttribute 'is-context', 'false'
-        else
-            itemLI.setAttribute 'is-context', 'true'
-
-        if allContext
-            itemLI.setAttribute 'is-context', 'true'
-
+        switch
+            when item.queryResult and item.tagResult
+                itemLI.setAttribute 'show', 'result'
+            when item.contextLevel is -1 and contextLevel isnt -1
+	        # Parent item context.
+                itemLI.setAttribute 'show', 'context'
+            when contextLevel is 0 and item.contextLevel
+	        # Show everything as context.
+                itemLI.setAttribute 'show', 'context'
+            when item.contextLevel > 0 and item.contextLevel < contextLevel
+	        # Limit child context items.
+                itemLI.setAttribute 'show', 'context'
+            else
+                itemLI.setAttribute 'show', 'hidden'
 
         itemLI.innerHTML = indentation + item.bodyHighlightedAttributedString
                                              .toInlineBMLString() or '&nbsp;'
@@ -51,48 +65,53 @@ export default renderTaskpaperOutline  = (text, itemPath='*', selectedTags=[], s
         tags[b].count - tags[a].count
     sortedTags = (tags[k] for k in sortedKeys)
 
-    results = outline.evaluateItemPath(itemPath)
 
-    for item in results
-        item.hasTag = false
-        for tagName in item.attributeNames
-            if tagName in ['data-type', 'indent'] then continue
-            tagName = tagName.replace 'data-', ''
-            key = tagName.toLowerCase()
-            if (key in selectedTags) or (selectedTags.length is 0)
-                item.directResult = true
-                item.hasTag = true
-                break
+    queryResults = outline.evaluateItemPath(query)
+    for item in queryResults
+        item.queryResult = true
 
-    results = results.filter (item) -> item.hasTag
+    if selectedTags.length
+        tagQuery = ("#{tags[key].name}" for key in selectedTags).join(' or ')
+    else
+        tagQuery = '*'
 
-    resultsToRender = results
+    tagResults = outline.evaluateItemPath(tagQuery)
 
-    # Add parent items, for context.
-    if showParents
-        knownParents =
-            'Birch': true
+    for item in tagResults
+        item.tagResult = true
 
-        resultsToRender = []
 
-        addItem = (item) ->
-            knownParents[item.id] = true
-            if item.parent and not knownParents[item.parent.id]
-                addItem(item.parent)
 
-            resultsToRender.push item
+    addParentContext = (item, level=0) ->
+        if item.parent
+            item.parent.contextLevel = level - 1
+            addParentContext item.parent,  level - 1
 
-        for item in results
-            addItem item
+    addChildContext = (item, level=0) ->
+        for child in item.children
+            child.contextLevel = level + 1
+            addChildContext child, level + 1
+
+    for item in outline.items
+        if item.queryResult and item.tagResult
+            item.contextLevel = 0
+            addParentContext item
+            addChildContext item
+
+
+
 
 
     html = ''
-    for item in resultsToRender
+    numResults = 0
+    for item in outline.items
         html += renderItem item
+        if item.queryResult and item.tagResult
+            numResults++
 
-    resultCount = "#{results.length} result"
-    if results.length isnt 1 then resultCount += 's'
-    if (itemPath is '*') and (selectedTags.length is 0) then resultCount = ''
+    resultCount = "#{numResults} result"
+    if numResults isnt 1 then resultCount += 's'
+    if not itemPath and (selectedTags.length is 0) then resultCount = ''
 
     return { html, count: resultCount, tags: sortedTags }
 
