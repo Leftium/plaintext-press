@@ -2,6 +2,12 @@
     import Main from './Main.svelte'
     import View from './View.svelte'
 
+    parseBoolean = (value) ->
+        falsey = /^(?:f(?:alse)?|no?|0+)$/i
+        !falsey.test(value) and !!value
+
+    DEV_MODE = parseBoolean(new URL(location).searchParams.get('dev'))
+
     TEST_URLS = [
         ['View: urlencoded', '/Hello+World']
         ['View: https (patagonia)', '/https://www.dropbox.com/s/1g5qrmfinno8a5j/patagonia.taskpaper?dl=0']
@@ -26,11 +32,12 @@
 
 
 <template lang=pug>
-hr
-h2 App.svelte starts here:
-ul
-    +each('TEST_URLS as tu')
-        li: a(href='{tu[1]}' title='{tu[1]}') {tu[0]}
++if('DEV_MODE')
+    hr
+    h2 App.svelte starts here (i.e. anthhing below here is only here for developers):
+    ul
+        +each('TEST_URLS as tu')
+            li: a(href='{tu[1]}' title='{tu[1]}') {tu[0]}
 </template>
 
 <style>
