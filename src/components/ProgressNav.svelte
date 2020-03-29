@@ -30,6 +30,8 @@ drawPath = () ->
 
     # Remove missing targets
     tocItems = tocItems.filter ( item ) ->
+        if item.target.getAttribute('show') is 'hidden'
+            return false
         return !!item.target
 
     path = []
@@ -77,15 +79,16 @@ sync = () ->
     pathEnd = 0
 
     visibleItems = 0
+    tocItems.forEach ( item, i ) ->
 
-    lastItem = tocItems[0]
+        {top, bottom} = item.target.getBoundingClientRect()
 
-    tocItems.forEach ( item ) ->
+        if nextItem = tocItems[i + 1]
+            bottom = nextItem.target.getBoundingClientRect().top
+        else
+            bottom = Infinity
 
-        targetBounds = item.target.getBoundingClientRect()
-
-        if (targetBounds.bottom > windowHeight * TOP_MARGIN) and (targetBounds.top < windowHeight * ( 1 - BOTTOM_MARGIN ) )
-        # if(targetBounds.top < windowHeight * ( 1 - BOTTOM_MARGIN ) ) {
+        if (bottom > windowHeight * TOP_MARGIN) and (top < windowHeight * ( 1 - BOTTOM_MARGIN ) )
             pathStart = Math.min( item.pathStart, pathStart )
             pathEnd = Math.max( item.pathEnd, pathEnd )
 
@@ -94,18 +97,6 @@ sync = () ->
             item.listItem.classList.add( 'visible' )
         else
             item.listItem.classList.remove( 'visible' )
-
-        if targetBounds.top < windowHeight * ( 1 - BOTTOM_MARGIN )
-            lastItem = item
-
-
-      if visibleItems is 0
-          lastItem.listItem.classList.add('visible')
-          visibleItems++
-          pathStart = Math.min( lastItem.pathStart, pathStart )
-          pathEnd = Math.max( lastItem.pathEnd, pathEnd )
-
-
 
       # Specify the visible path or hide the path altogether
       # if there are no visible items
