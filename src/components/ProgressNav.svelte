@@ -33,7 +33,7 @@ drawPath = () ->
         return !!item.target
 
     path = []
-    pathIndent
+    pathIndent = null
 
     tocItems.forEach ( item, i ) ->
 
@@ -111,7 +111,7 @@ sync = () ->
       # if there are no visible items
       if visibleItems > 0 and (pathStart < pathEnd )
           tocPath.setAttribute( 'stroke-dashoffset', '1' )
-          tocPath.setAttribute( 'stroke-dasharray', '1, '+ pathStart +', '+ ( pathEnd - pathStart ) +', ' + pathLength )
+          tocPath.setAttribute( 'stroke-dasharray', "1, #{pathStart}, #{pathEnd - pathStart}, #{pathLength}" )
           tocPath.setAttribute( 'opacity', 1 )
       else
           tocPath.setAttribute( 'opacity', 0 );
