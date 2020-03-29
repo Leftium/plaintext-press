@@ -26,7 +26,7 @@ export default renderTaskpaperOutline  = (text, itemPath, selectedTags=[], conte
         switch
             when item.queryResult and item.tagResult
                 itemLI.setAttribute 'show', 'result'
-            when item.contextLevel is -1 and contextLevel isnt -1
+            when item.contextLevel < 0 and contextLevel isnt -1
 	        # Parent item context.
                 itemLI.setAttribute 'show', 'context'
             when contextLevel is 0 and item.contextLevel
