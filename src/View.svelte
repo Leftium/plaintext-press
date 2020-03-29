@@ -5,6 +5,7 @@ import lzString from 'lz-string'
 
 import ClipboardInput from './components/ClipboardInput.svelte'
 import ClipboardLink  from './components/ClipboardLink.svelte'
+import ProgressNav  from './components/ProgressNav.svelte'
 
 import renderTaskpaper from './cs/render-taskpaper.coffee'
 import neatLinkify from './cs/neat-linkify.coffee'
@@ -60,6 +61,8 @@ fetchLocator = (locator) ->
 render = (text, query, selectedTags, contextLevel) ->
     {html, rest...} = await renderTaskpaper text, query, selectedTags, contextLevel
 
+    nav = []
+
     if html
         tmpDiv = document.createElement 'div'
         tmpDiv.innerHTML = html
@@ -67,12 +70,18 @@ render = (text, query, selectedTags, contextLevel) ->
         listItems = tmpDiv.querySelectorAll 'li'
 
         for listItem in listItems
-            if matches = listItem.innerText.match /(^|\s)#([^#\s]*)/i
-                listItem.id = matches[2].toLowerCase()
+            if matches = listItem.innerText.match /(^|\s)#([^#:\s]*)/i
+                name = matches[2]
+                id = name.toLowerCase()
+
+                listItem.id = id
+                nav.push object =
+                    id: id
+                    name:name
 
         html = tmpDiv.innerHTML
 
-    return {html, rest...}
+    return {html, nav, rest...}
 
 tagIsVisible = (key, name, tagFilter) ->
     if (tagFilter is '') or (name.toLowerCase().match(tagFilter)) or (key in selectedTags)
@@ -241,6 +250,10 @@ onMount () ->
         div.sidebar-main-container
             div.sidebar-container('spellcheck=false')
                 div.sidebar
+                    +await('rendered then rendered')
+                        ProgressNav
+                            ul: +each('rendered.nav as {id, name}')
+                                li: a(href='#{id}') {name}
                     div.tag-controls
                         h2 Tags
                         input('bind:value={tagFilter}' placeholder='Tag Filter')
