@@ -250,10 +250,12 @@ onMount () ->
         div.sidebar-main-container
             div.sidebar-container('spellcheck=false')
                 div.sidebar
-                    +await('rendered then rendered')
-                        ProgressNav
-                            ul: +each('rendered.nav as {id, name}')
-                                li: a(href='#{id}') {name}
+                    details(open)
+                        summary Contents
+                        +await('rendered then rendered')
+                            ProgressNav
+                                ul: +each('rendered.nav as {id, name}')
+                                    li: a(href='#{id}') {name}
                     div.tag-controls
                         h2 Tags
                         input('bind:value={tagFilter}' placeholder='Tag Filter')
@@ -293,7 +295,6 @@ onMount () ->
     }
 
     .tag-container {
-        height: 300px;
         overflow-y: scroll;
     }
 
@@ -310,14 +311,16 @@ onMount () ->
 
     .sidebar-main-container {
         display: flex;
-        background-color: #eee8d5
+        background-color: #eee8d5;
     }
 
     .sidebar {
         width: 200px;
-        height: 400px;
         position: sticky;
         top: 34px;
+        bottom: 0px;
+
+        overflow-x: hidden;
     }
 
     header {
@@ -343,7 +346,7 @@ onMount () ->
 
     main {
         width: 100%;
-        min-height: 100vh;
+        min-height: 4000px;
         padding: 8px;
         background-color: #fdf6e3;
         color: #657b83;
