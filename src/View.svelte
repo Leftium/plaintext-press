@@ -1,4 +1,4 @@
-<script type='text/coffeescript'>
+<script type="text/coffeescript">
 import { onMount } from 'svelte'
 
 import lzString from 'lz-string'
@@ -124,7 +124,7 @@ onToggle = (e) ->
 url = new URL location
 
 open = url.searchParams.get('advanced') is '1'
-tpQuery = url.searchParams.get('query')
+tpQuery = url.searchParams.get('query') || '*'
 
 tagFilter = ''
 
@@ -211,11 +211,9 @@ onMount () ->
 
 </script>
 
-<svelte:window
-    on:hashchange={jumpToHash}
-/>
+<svelte:window on:hashchange={jumpToHash} />
 
-<template lang=pug>
+<template lang="pug">
     header('spellcheck=false')
         div.source: h1 Source: {@html source}
         details('bind:open' 'on:toggle={onToggle}')
@@ -278,222 +276,244 @@ onMount () ->
                     p {error}
 </template>
 
-
 <style global>
-    .tag-controls {
-        padding: 8px;
-    }
+  .tag-controls {
+    padding: 8px;
+  }
 
-    .label {
-        display: flex;
-        justify-content: space-between;
-        padding: 0 8px;
-    }
-    .tag-count {
-        font-size: 12px;
-        opacity: 50%;
-    }
+  .label {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 8px;
+  }
+  .tag-count {
+    font-size: 12px;
+    opacity: 50%;
+  }
 
-    .tag-container {
-        overflow-y: scroll;
-    }
+  .tag-container {
+    overflow-y: scroll;
+  }
 
-    .controls span {
-        font-size: 14px;
-    }
-    .tag input[type=checkbox] {
-        display: none
-    }
+  .controls span {
+    font-size: 14px;
+  }
+  .tag input[type="checkbox"] {
+    display: none;
+  }
 
-    input:checked + label {
-        font-weight: bold;
-    }
+  input:checked + label {
+    font-weight: bold;
+  }
 
-    .sidebar-main-container {
-        display: flex;
-        background-color: #eee8d5;
-    }
+  .sidebar-main-container {
+    display: flex;
+    background-color: #eee8d5;
+  }
 
-    .sidebar {
-        width: 200px;
-        position: sticky;
-        top: 34px;
-        bottom: 0px;
+  .sidebar {
+    width: 200px;
+    position: sticky;
+    top: 34px;
+    bottom: 0px;
 
-        overflow-x: hidden;
-    }
+    overflow-x: hidden;
+  }
 
-    header {
-        background-color: #eee8d5;
-        color: #657b83;
-    }
+  header {
+    background-color: #eee8d5;
+    color: #657b83;
+  }
 
-    header > div {
-        padding: 0 8px;
-    }
+  header > div {
+    padding: 0 8px;
+  }
 
-    header h1, header h2, header h3 {
-        margin: 0;
-    }
+  header h1,
+  header h2,
+  header h3 {
+    margin: 0;
+  }
 
-    header details {
-        padding: 0 8px;
-    }
+  header details {
+    padding: 0 8px;
+  }
 
-    .options {
-        margin-bottom: 20px;
-    }
+  .options {
+    margin-bottom: 20px;
+  }
 
-    main {
-        width: 100%;
-        min-height: 4000px;
-        padding: 8px;
-        background-color: #fdf6e3;
-        color: #657b83;
-    }
+  main {
+    width: 100%;
+    min-height: 4000px;
+    padding: 8px;
+    background-color: #fdf6e3;
+    color: #657b83;
+  }
 
-    .links pre {
-        margin: 0;
-    }
+  .links pre {
+    margin: 0;
+  }
 
-    .links label {
-        margin-bottom: 10px;
-    }
+  .links label {
+    margin-bottom: 10px;
+  }
 
-    .links button {
-        width: 110px;
-    }
-    .controls {
-        display: flex;
-        align-items: baseline;
+  .links button {
+    width: 110px;
+  }
+  .controls {
+    display: flex;
+    align-items: baseline;
 
-        border-bottom: 1px dotted #586e75;
-        background-color: #eee8d5;
-        padding: 2px 8px;
+    border-bottom: 1px dotted #586e75;
+    background-color: #eee8d5;
+    padding: 2px 8px;
 
-        position: sticky;
-        top: 0;
+    position: sticky;
+    top: 0;
 
-        z-index: 9999;
-    }
+    z-index: 9999;
+  }
 
-    .controls > span {
-        margin-right: 8px;
-        font-size: 14px;
-    }
+  .controls > span {
+    margin-right: 8px;
+    font-size: 14px;
+  }
 
-    .controls .result-count {
-        margin-left: auto;
-        color: #93a1a1;
-    }
+  .controls .result-count {
+    margin-left: auto;
+    color: #93a1a1;
+  }
 
-    .controls .copy-button {
-        margin-right: 0;
-    }
+  .controls .copy-button {
+    margin-right: 0;
+  }
 
-    .controls i{
-        padding-right: 6px;
-    }
+  .controls i {
+    padding-right: 6px;
+  }
 
-    .sidebar button,
-    .controls button {
-        padding: 2px 8px;
-        border-radius: 4px;
-        margin-bottom: 2px;
-    }
+  .sidebar button,
+  .controls button {
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+  }
 
-    header details summary,
-    .taskpaper-query input:focus {
-        outline: none;
-    }
+  header details summary,
+  .taskpaper-query input:focus {
+    outline: none;
+  }
 
-    .taskpaper-query {
-        display: inline-block;
-    }
+  .taskpaper-query {
+    display: inline-block;
+  }
 
-    .options input,
-    .taskpaper-query input {
-        padding: 2px 2px;
-        font-size: 14px;
-        margin-bottom: 4px;
-    }
+  .options input,
+  .taskpaper-query input {
+    padding: 2px 2px;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
 
-    .taskpaper-query input {
-        border-radius: 15px;
-    }
+  .taskpaper-query input {
+    border-radius: 15px;
+  }
 
-    .inner-addon {
-        position: relative;
-    }
+  .inner-addon {
+    position: relative;
+  }
 
-    /* style icon */
-    .inner-addon .fas {
-        position: absolute;
-        padding: 7px;
-        pointer-events: none;
-        color: #ccc;
-    }
+  /* style icon */
+  .inner-addon .fas {
+    position: absolute;
+    padding: 7px;
+    pointer-events: none;
+    color: #ccc;
+  }
 
-    /* align icon */
-    .left-addon .fas  { left:  2px; }
-    .right-addon .fas { right: 0px; }
+  /* align icon */
+  .left-addon .fas {
+    left: 2px;
+  }
+  .right-addon .fas {
+    right: 0px;
+  }
 
-    /* add padding  */
-    .left-addon input  { padding-left:  30px; }
-    .right-addon input { padding-right: 30px; }
+  /* add padding  */
+  .left-addon input {
+    padding-left: 30px;
+  }
+  .right-addon input {
+    padding-right: 30px;
+  }
 
-    .controls label {
-        display: initial;
-    }
+  .controls label {
+    display: initial;
+  }
 
-    input[type=checkbox] {
-        margin: 3px 3px 3px 4px;
-    }
+  input[type="checkbox"] {
+    margin: 3px 3px 3px 4px;
+  }
 
+  .context-buttons button {
+    padding: 2px;
+  }
 
-    .context-buttons button {
-        padding: 2px;
-    }
+  .controls button:focus {
+    border-color: #ccc;
+  }
 
-    .controls button:focus {
-        border-color: #ccc;
-    }
+  .context-buttons :first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 0.5px solid #ccc;
+  }
 
-    .context-buttons :first-child {
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-        border-right: .5px solid #ccc;
-    }
+  .context-buttons :last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: 0.5px solid #ccc;
+  }
 
-    .context-buttons :last-child {
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-        border-left: .5px solid #ccc;
-    }
+  .content {
+    white-space: pre-wrap;
+    display: inline-block;
+    tab-size: 40px;
+  }
 
+  .content [data-type="project"] {
+    font-weight: bold;
+  }
+  .content [data-type="note"] {
+    font-style: italic;
+  }
+  .content span[tag] {
+    color: #2aa198;
+    font-weight: normal;
+  }
 
-    .content {
-        white-space: pre-wrap;
-        display: inline-block;
-        tab-size: 40px;
-    }
+  .content [data-done] {
+    text-decoration: line-through;
+  }
+  .content [is-context="true"] {
+    opacity: 44%;
+  }
 
-    .content [data-type="project"] { font-weight: bold; }
-    .content [data-type="note"] { font-style: italic; }
-    .content span[tag] { color: #2aa198; font-weight: normal }
+  .content [show="result"] {
+  }
+  .content [show="context"] {
+    opacity: 22%;
+  }
+  .content [show="hidden"] {
+    display: none;
+  }
 
-    .content [data-done] { text-decoration: line-through; }
-    .content [is-context='true'] { opacity: 44%; }
-
-    .content [show='result'] { }
-    .content [show='context'] { opacity: 22%; }
-    .content [show='hidden'] { display:none }
-
-    .content ul,
-    .content li,
-    .content p {
-        list-style-type: none;
-        margin: .38em auto;
-    }
+  .content ul,
+  .content li,
+  .content p {
+    list-style-type: none;
+    margin: 0.38em auto;
+  }
 </style>
-
